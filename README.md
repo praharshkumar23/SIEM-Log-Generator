@@ -24,8 +24,8 @@
 **Praharsh Kumar**
 *SOC Analyst | Detection Engineer | Multi-SIEM Lab Builder*
 
-[![LinkedIn](https://img.shields.io/badge/LinkedIn-Connect-0077B5?style=flat&logo=linkedin)](https://linkedin.com/in/praharshkumar)
-[![GitHub](https://img.shields.io/badge/GitHub-Follow-181717?style=flat&logo=github)](https://github.com/praharsh-kumar)
+[![LinkedIn](https://img.shields.io/badge/LinkedIn-Connect-0077B5?style=flat&logo=linkedin)](/https://www.linkedin.com/in/praharshkumar23/)
+[![GitHub](https://img.shields.io/badge/GitHub-Follow-181717?style=flat&logo=github)](https://github.com/praharshkumar23)
 
 ---
 
