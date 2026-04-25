@@ -1,7 +1,230 @@
-# SIEM Log Generator — Praharsh Edition
-# No external dependencies — uses Python standard library only
+import os, zipfile
 
-# Optional (uncomment if needed)
-# pandas>=1.5.0    # Advanced data analysis
-# faker>=18.0.0    # More realistic names/addresses
-# rich>=13.0.0     # Pretty console output
+requirements = '''# ==============================================================
+#   SIEM Log Generator — Praharsh Edition
+#   requirements.txt
+# ==============================================================
+#
+#   Project     : Multi-SIEM Log Generator for SOC Labs
+#   Author      : Praharsh Kumar
+#   GitHub      : https://github.com/praharshkumar23/SIEM-Log-Generator
+#   Python      : 3.8 or higher required
+#
+#   INSTALL     : pip install -r requirements.txt
+#   VERIFY      : pip list | grep -E "faker|pandas|rich|requests"
+#
+# ==============================================================
+
+
+# --------------------------------------------------------------
+# SECTION 1 — PYTHON STANDARD LIBRARY (Built-in, no install)
+# --------------------------------------------------------------
+# These modules are included with Python 3.8+ by default.
+# Listed here for documentation purposes only.
+#
+#   Module          Purpose in this project
+#   ─────────────── ────────────────────────────────────────────
+#   json            Serialize log events to JSON output files
+#   csv             Write log events to CSV for Splunk import
+#   random          Generate random IPs, users, severities
+#   datetime        Create ISO 8601 timestamps for each event
+#   os              Handle file paths and output directories
+#   sys             Accept CLI arguments (e.g. --count 5000)
+#   uuid            Generate unique event_id for every log
+#   hashlib         Generate realistic MD5/SHA256 file hashes
+#   time            Measure script execution duration
+#   collections     Count events per severity using Counter()
+#   re              Regex patterns for log field validation
+#   pathlib         Cross-platform file path management
+#   argparse        Command-line argument parsing
+#   typing          Type hints for function signatures
+# --------------------------------------------------------------
+
+
+# --------------------------------------------------------------
+# SECTION 2 — REQUIRED PACKAGES (Must install)
+# --------------------------------------------------------------
+
+faker>=18.0.0
+# Purpose   : Generates realistic fake data for log fields
+# Used for  : Usernames, hostnames, IP addresses, email addresses,
+#             company names, domain names, file paths, MAC addresses
+# Example   : fake.user_name() → "john.doe"
+#             fake.ipv4_private() → "192.168.1.45"
+#             fake.file_path() → "/var/log/auth.log"
+# Install   : pip install faker
+# Docs      : https://faker.readthedocs.io/
+
+
+# --------------------------------------------------------------
+# SECTION 3 — OPTIONAL PACKAGES (Uncomment to enable)
+# --------------------------------------------------------------
+# These enhance the tool but are NOT required for basic usage.
+# Uncomment the ones you want and run: pip install -r requirements.txt
+# --------------------------------------------------------------
+
+# pandas>=1.5.0
+# Purpose   : Advanced data manipulation and analysis
+# Used for  : Filtering events by severity, calculating event
+#             statistics, converting between formats, exporting
+#             to Excel (.xlsx) for reporting
+# Install   : pip install pandas
+# Docs      : https://pandas.pydata.org/docs/
+# Note      : Required if you want Excel output format
+
+# rich>=13.0.0
+# Purpose   : Beautiful terminal output with colors and tables
+# Used for  : Colored severity levels in console output,
+#             live progress bar during generation,
+#             formatted summary table after completion
+# Install   : pip install rich
+# Docs      : https://rich.readthedocs.io/
+# Note      : Falls back to plain print() if not installed
+
+# requests>=2.28.0
+# Purpose   : HTTP client for direct API integrations
+# Used for  : Sending logs to Splunk HTTP Event Collector (HEC),
+#             Wazuh REST API ingestion,
+#             Microsoft Sentinel Data Collector API,
+#             Elasticsearch REST API bulk indexing
+# Install   : pip install requests
+# Docs      : https://requests.readthedocs.io/
+# Note      : Required only if using API push mode
+
+# colorama>=0.4.6
+# Purpose   : Cross-platform terminal color support
+# Used for  : Ensures colored output works on Windows CMD
+#             and PowerShell (not just Linux/Mac terminals)
+# Install   : pip install colorama
+# Docs      : https://pypi.org/project/colorama/
+# Note      : Only needed on Windows — Linux/Mac don't need it
+
+# tqdm>=4.65.0
+# Purpose   : Fast, extensible progress bars
+# Used for  : Showing progress when generating 5000+ events,
+#             useful for stress testing large log batches
+# Install   : pip install tqdm
+# Docs      : https://tqdm.github.io/
+# Note      : Falls back to silent mode if not installed
+
+# python-dateutil>=2.8.2
+# Purpose   : Extended date/time parsing and manipulation
+# Used for  : Parsing varied timestamp formats from different
+#             SIEMs, generating date ranges for custom scenarios
+# Install   : pip install python-dateutil
+# Docs      : https://dateutil.readthedocs.io/
+
+
+# --------------------------------------------------------------
+# SECTION 4 — SIEM-SPECIFIC OPTIONAL PACKAGES
+# --------------------------------------------------------------
+# Only needed if you use specific SIEM integrations
+# --------------------------------------------------------------
+
+# elasticsearch>=8.0.0
+# Purpose   : Official Elasticsearch Python client
+# Used for  : Direct bulk indexing into ELK Stack
+#             without needing Logstash
+# Install   : pip install elasticsearch
+# Docs      : https://elasticsearch-py.readthedocs.io/
+# Note      : Requires running ELK Stack (192.168.56.103:9200)
+
+# splunk-sdk>=1.7.0
+# Purpose   : Official Splunk SDK for Python
+# Used for  : Authenticating and pushing events to Splunk
+#             directly via the Splunk REST API
+# Install   : pip install splunk-sdk
+# Docs      : https://dev.splunk.com/enterprise/docs/python/sdk-python/
+
+# azure-monitor-ingestion>=1.0.0
+# Purpose   : Official Azure SDK for log ingestion
+# Used for  : Sending logs to Microsoft Sentinel /
+#             Azure Log Analytics workspace
+# Install   : pip install azure-monitor-ingestion
+# Docs      : https://pypi.org/project/azure-monitor-ingestion/
+
+
+# --------------------------------------------------------------
+# SECTION 5 — DEVELOPMENT PACKAGES (Only for contributors)
+# --------------------------------------------------------------
+# Not needed to run the tool — only for development/testing
+# --------------------------------------------------------------
+
+# pytest>=7.0.0
+# Purpose   : Unit testing framework
+# Used for  : Running test suite (tests/ folder)
+# Install   : pip install pytest
+# Run tests : pytest tests/ -v
+
+# black>=23.0.0
+# Purpose   : Automatic Python code formatter
+# Used for  : Enforcing PEP8 code style
+# Install   : pip install black
+# Run       : black generate_logs.py
+
+# pylint>=2.17.0
+# Purpose   : Static code analysis / linting
+# Used for  : Catching code quality issues before commits
+# Install   : pip install pylint
+# Run       : pylint generate_logs.py
+
+# mypy>=1.0.0
+# Purpose   : Static type checker for Python
+# Used for  : Verifying type hints are correct
+# Install   : pip install mypy
+# Run       : mypy generate_logs.py
+
+
+# --------------------------------------------------------------
+# SECTION 6 — QUICK INSTALL REFERENCE
+# --------------------------------------------------------------
+#
+#   Use case                    Command
+#   ─────────────────────────── ────────────────────────────────
+#   Minimum (basic generation)  pip install faker
+#
+#   Standard (recommended)      pip install faker rich tqdm
+#
+#   With API push support       pip install faker rich tqdm requests
+#
+#   Full optional install       pip install faker pandas rich requests
+#                                           colorama tqdm python-dateutil
+#
+#   ELK integration             pip install faker elasticsearch
+#
+#   Splunk SDK integration      pip install faker splunk-sdk requests
+#
+#   Sentinel integration        pip install faker requests
+#                                           azure-monitor-ingestion
+#
+#   Full developer install      pip install faker pandas rich requests
+#                                           colorama tqdm python-dateutil
+#                                           elasticsearch splunk-sdk
+#                                           pytest black pylint mypy
+#
+# --------------------------------------------------------------
+#
+#   Verify installed packages:
+#   pip list | grep -E "faker|pandas|rich|requests|tqdm|colorama"
+#
+#   Check Python version (must be 3.8+):
+#   python --version
+#
+# ==============================================================
+'''
+
+with open("praharsh_siem_project/requirements.txt", "w") as f:
+    f.write(requirements)
+
+print(f"✅ requirements.txt written — {len(requirements)} bytes ({len(requirements)//1024} KB)")
+
+# Rebuild ZIP
+zip_path = "Praharsh_SIEM_Log_Generator.zip"
+with zipfile.ZipFile(zip_path, "w", zipfile.ZIP_DEFLATED) as zf:
+    for root, dirs, files in os.walk("praharsh_siem_project"):
+        for file in files:
+            fpath = os.path.join(root, file)
+            arcname = os.path.relpath(fpath, "praharsh_siem_project")
+            zf.write(fpath, arcname)
+
+print(f"📦 ZIP rebuilt: {os.path.getsize(zip_path)/1024/1024:.2f} MB")
