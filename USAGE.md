@@ -308,7 +308,7 @@ filter {
 
 output {
   elasticsearch {
-    hosts    => ["http://192.168.56.143:9200"]
+    hosts    => ["http://192.168.56.123:9200"]
     index    => "praharsh-soc-lab-%{+yyyy.MM.dd}"
     user     => "elastic"
     password => "your_password"
@@ -334,7 +334,7 @@ logstash -f logstash_praharsh.conf
 ### Verify via API
 
 ```bash
-curl -u elastic:password http://192.168.56.143:9200/_cat/indices/praharsh*
+curl -u elastic:password http://192.168.26.143:9200/_cat/indices/praharsh*
 ```
 
 ---
@@ -475,10 +475,10 @@ praharsh_siem_logs_CL
 
 ```bash
 # Level 12+ alerts
-curl -u admin:admin "https://192.168.56.103:55000/alerts?level=12&pretty=true"
+curl -u admin:admin "https://192.168.26.103:55000/alerts?level=12&pretty=true"
 
 # Level 8+ last 50
-curl -u admin:admin "https://192.168.56.103:55000/alerts?level=8&limit=50&pretty=true"
+curl -u admin:admin "https://192.168.26.103:55000/alerts?level=8&limit=50&pretty=true"
 ```
 
 ---
@@ -505,7 +505,7 @@ sudo systemctl restart wazuh-manager
 
 **Logstash — Connection refused**
 ```bash
-curl http://192.168.56.103:9200/_cluster/health
+curl http://192.168.26.103:9200/_cluster/health
 logstash --config.test_and_exit -f logstash_praharsh.conf
 ```
 
